@@ -11,12 +11,14 @@ export const Blogs = () => {
     <div>
       <Appbar />
       <div className="flex justify-center">
-        {blogs &&
-          blogs.map((blog, index) => (
-            <div key={index}>
-              <BlogCard blog={blog} />
-            </div>
-          ))}
+        <div>
+          {blogs &&
+            blogs.map((blog, index) => (
+              <div key={index}>
+                <BlogCard blog={blog} />
+              </div>
+            ))}
+        </div>
       </div>
     </div>
   );
