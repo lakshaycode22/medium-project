@@ -1,6 +1,3 @@
-import { useEffect, useState } from "react";
-import axios from "axios";
-import { BACKEND_URL } from "../config";
 import { GoHeart } from "react-icons/go";
 import { GoHeartFill } from "react-icons/go";
 import { Appbar } from "./Appbar";
