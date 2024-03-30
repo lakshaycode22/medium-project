@@ -8,17 +8,29 @@ datasource db {
 }
 
 model User {
-  id Int @id @default(autoincrement())
-  name String?
-  username String @unique
+  id       Int            @id @default(autoincrement())
+  name     String?
+  username String         @unique
   password String
-  blogs Blog[]
+  blogs    Blog[]
+  likes    LikesOnBlogs[]
 }
 
 model Blog {
-  id Int @id @default(autoincrement())
-  author User  @relation(fields: [authorId], references: [id])
-  authorId Int
-  title String
-  content String
+  id        Int            @id @default(autoincrement())
+  author    User           @relation(fields: [authorId], references: [id])
+  authorId  Int
+  title     String
+  content   String
+  createdAt DateTime       @default(now())
+  likedBy   LikesOnBlogs[]
+}
+
+model LikesOnBlogs {
+  user   User @relation(fields: [userId], references: [id])
+  userId Int
+  blog   Blog @relation(fields: [blogId], references: [id])
+  blogId Int
+
+  @@id([userId, blogId])
 }

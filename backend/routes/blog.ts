@@ -52,7 +52,7 @@ blogRouter.post("/", async (c) => {
     });
   } catch (error) {
     c.status(411);
-    return c.text("There is an error in the signup route :" + error);
+    return c.text("There is an error in this route :" + error);
   }
 });
 
@@ -81,7 +81,7 @@ blogRouter.put("/", async (c) => {
     });
   } catch (error) {
     c.status(411);
-    return c.text("There is an error in the signup route :" + error);
+    return c.text("There is an error in this route :" + error);
   }
 });
 
@@ -108,7 +108,7 @@ blogRouter.get("/bulk", async (c) => {
     });
   } catch (error) {
     c.status(411);
-    return c.text("There is an error in the signup route :" + error);
+    return c.text("There is an error in this route :" + error);
   }
 });
 
@@ -122,11 +122,11 @@ blogRouter.get("/:id", async (c) => {
       where: {
         id: id,
       },
-
       select: {
         id: true,
         title: true,
         content: true,
+        likedBy: true,
         author: {
           select: {
             name: true,
@@ -134,14 +134,107 @@ blogRouter.get("/:id", async (c) => {
         },
       },
     });
+
+    if(!blog) throw new Error("Blog not found")
+
+    let like = false;
+    blog.likedBy.forEach((liked) => {
+      if(liked.userId === Number(c.get("userId"))) like = true;
+    })
+
     return c.json({
       message: "blog found",
       blog,
+      like,
     });
   } catch (error) {
     c.status(411);
-    return c.text("There is an error in the signup route :" + error);
+    return c.text("There is an error in this route :" + error);
+  }
+});
+
+blogRouter.post("/like/:id", async (c) => {
+  try {
+    const prisma = new PrismaClient({
+      datasourceUrl: c.env.DATABASE_URL,
+    }).$extends(withAccelerate());
+    const id = Number(c.req.param("id"));
+    const blog = await prisma.blog.findUnique({
+      where: {
+        id: id,
+      },
+      select: {
+        id: true,
+        likedBy: {
+          where: {
+            userId: Number(c.get("userId")),
+          },
+        },
+      },
+    });
+
+    if (!blog) throw new Error("Blog not found");
+
+    if (blog.likedBy.length === 0) {
+      await prisma.likesOnBlogs.create({
+        data: {
+          userId: Number(c.get("userId")),
+          blogId: id,
+        },
+      });
+    }
+
+    return c.json({
+      message: "You have liked this blog",
+    });
+  } catch (error) {
+    c.status(411);
+    return c.text("There is an error in this route :" + error);
+  }
+});
+
+
+blogRouter.delete("/unlike/:id", async (c) => {
+  try {
+    const prisma = new PrismaClient({
+      datasourceUrl: c.env.DATABASE_URL,
+    }).$extends(withAccelerate());
+    const id = Number(c.req.param("id"));
+    const blog = await prisma.blog.findUnique({
+      where: {
+        id: id,
+      },
+      select: {
+        id: true,
+        likedBy: {
+          where: {
+            userId: Number(c.get("userId")),
+          },
+        },
+      },
+    });
+
+    if (!blog) throw new Error("Blog not found");
+
+    if (blog.likedBy.length !== 0) {
+      await prisma.likesOnBlogs.deleteMany({
+        where: {
+          userId: Number(c.get("userId")),
+          blogId: id,
+        },
+      });
+    }
+
+    return c.json({
+      message: "You have unliked this blog",
+    });
+  } catch (error) {
+    c.status(411);
+    return c.text("There is an error in this route :" + error);
   }
 });
 
 export default blogRouter;
+
+
+

@@ -1,16 +1,27 @@
+import { useEffect, useState } from "react";
+import axios from "axios";
+import { BACKEND_URL } from "../config";
+import { GoHeart } from "react-icons/go";
+import { GoHeartFill } from "react-icons/go";
 import { Appbar } from "./Appbar";
 import { Avatar } from "./Avatar";
+import { useLike } from "../hooks";
 
-interface Blog {
+type Blog = {
   id: number;
   title: string;
   content: string;
   author: {
     name: string;
   };
-}
+};
 
-export const FullBlog = ({ blog }: { blog: Blog }) => {
+type LikedBy = [userId: number, blogId: number];
+
+type FullBlog = Blog & { likedBy: LikedBy };
+
+export const FullBlog = ({ blog, like }: { blog: FullBlog; like: boolean }) => {
+  const { currLike, currLen, handleLike } = useLike(like, blog.likedBy.length, blog.id);
   return (
     <div>
       <Appbar />
@@ -18,7 +29,24 @@ export const FullBlog = ({ blog }: { blog: Blog }) => {
         <div className="grid grid-cols-12 px-10 w-full pt-200 max-w-screen-xl pt-12">
           <div className="col-span-8">
             <div className="text-5xl font-extrabold">{blog.title}</div>
-            <div className="text-slate-500 pt-2">Published date will come here</div>
+            <div className="text-slate-500 pt-2">
+              Published date will come here
+            </div>
+            <div className="flex gap-2 text-2xl">
+              <button
+                className="my-auto"
+                onClick={() => {
+                  handleLike();
+                }}
+              >
+                {currLike ? (
+                  <GoHeartFill className=" text-red-500" />
+                ) : (
+                  <GoHeart />
+                )}
+              </button>
+              {currLen}
+            </div>
             <div className="pt-4">{blog.content}</div>
           </div>
           <div className="col-span-4">
