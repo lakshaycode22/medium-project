@@ -14,6 +14,7 @@ const blogRouter = new Hono<{
   };
 }>();
 
+// authentication middleware
 blogRouter.use("/*", async (c, next) => {
   const token = c.req.header("authorization") || "";
   const user = await verify(token, c.env.JWT_SECRET);
@@ -28,6 +29,7 @@ blogRouter.use("/*", async (c, next) => {
   }
 });
 
+//creating a new blog
 blogRouter.post("/", async (c) => {
   try {
     const prisma = new PrismaClient({
@@ -56,6 +58,7 @@ blogRouter.post("/", async (c) => {
   }
 });
 
+//updating an existing blog
 blogRouter.put("/", async (c) => {
   try {
     const prisma = new PrismaClient({
@@ -85,6 +88,7 @@ blogRouter.put("/", async (c) => {
   }
 });
 
+//getting all the blogs
 blogRouter.get("/bulk", async (c) => {
   try {
     const prisma = new PrismaClient({
@@ -112,6 +116,7 @@ blogRouter.get("/bulk", async (c) => {
   }
 });
 
+//getting a single blog
 blogRouter.get("/:id", async (c) => {
   try {
     const prisma = new PrismaClient({
@@ -135,12 +140,12 @@ blogRouter.get("/:id", async (c) => {
       },
     });
 
-    if(!blog) throw new Error("Blog not found")
+    if (!blog) throw new Error("Blog not found");
 
     let like = false;
     blog.likedBy.forEach((liked) => {
-      if(liked.userId === Number(c.get("userId"))) like = true;
-    })
+      if (liked.userId === Number(c.get("userId"))) like = true;
+    });
 
     return c.json({
       message: "blog found",
@@ -153,6 +158,7 @@ blogRouter.get("/:id", async (c) => {
   }
 });
 
+// liking a blog
 blogRouter.post("/like/:id", async (c) => {
   try {
     const prisma = new PrismaClient({
@@ -193,7 +199,7 @@ blogRouter.post("/like/:id", async (c) => {
   }
 });
 
-
+// unliking a blog
 blogRouter.delete("/unlike/:id", async (c) => {
   try {
     const prisma = new PrismaClient({
@@ -234,7 +240,36 @@ blogRouter.delete("/unlike/:id", async (c) => {
   }
 });
 
+//deleting a blog
+blogRouter.delete("/delete/:id", async (c) => {
+  try {
+    const prisma = new PrismaClient({
+      datasourceUrl: c.env.DATABASE_URL,
+    }).$extends(withAccelerate());
+    const blogId = Number(c.req.param("id"));
+    const userId = Number(c.get("userId"));
+
+    const blog = await prisma.blog.findFirst({
+      where: { id: blogId },
+    });
+
+    if (!blog) throw new Error("This blog doesn't exist");
+    if (blog.authorId !== userId)
+      throw new Error("You are not the author of this blog");
+
+    await prisma.blog.delete({
+      where: {
+        id: blogId,
+      },
+    });
+
+    return c.json({
+      message: "blog deleted successfully",
+    });
+  } catch (error) {
+    c.status(411);
+    return c.text("There is an error in this route :" + error);
+  }
+});
+
 export default blogRouter;
-
-
-

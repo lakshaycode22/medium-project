@@ -27,9 +27,9 @@ model Blog {
 }
 
 model LikesOnBlogs {
-  user   User @relation(fields: [userId], references: [id])
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId Int
-  blog   Blog @relation(fields: [blogId], references: [id])
+  blog   Blog @relation(fields: [blogId], references: [id], onDelete: Cascade)
   blogId Int
 
   @@id([userId, blogId])
