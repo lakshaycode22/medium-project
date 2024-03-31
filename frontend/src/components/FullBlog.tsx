@@ -3,6 +3,7 @@ import { GoHeartFill } from "react-icons/go";
 import { Appbar } from "./Appbar";
 import { Avatar } from "./Avatar";
 import { useLike } from "../hooks";
+import { DeleteBlog } from "./DeleteBlog";
 
 type Blog = {
   id: number;
@@ -18,7 +19,11 @@ type LikedBy = [userId: number, blogId: number];
 type FullBlog = Blog & { likedBy: LikedBy };
 
 export const FullBlog = ({ blog, like }: { blog: FullBlog; like: boolean }) => {
-  const { currLike, currLen, handleLike } = useLike(like, blog.likedBy.length, blog.id);
+  const { currLike, currLen, handleLike } = useLike(
+    like,
+    blog.likedBy.length,
+    blog.id
+  );
   return (
     <div>
       <Appbar />
@@ -45,6 +50,7 @@ export const FullBlog = ({ blog, like }: { blog: FullBlog; like: boolean }) => {
               {currLen}
             </div>
             <div className="pt-4">{blog.content}</div>
+            <DeleteBlog blogId={blog.id} />
           </div>
           <div className="col-span-4">
             <div className="text-slate-600 text-lg">Author</div>
